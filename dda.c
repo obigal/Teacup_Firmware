@@ -523,6 +523,86 @@ void dda_start(DDA *dda) {
   timer_set(dda->c, 0);
 }
 
+// fixme: this really should be in greycode.c
+int axisX[5] = {2, 3, 4, 5, -1};
+int axisY[5] = {6, 7, 8, 9, -1};
+int axisZ[5] = {10, 11, 12, 13, -1};
+int axisE[5] = {14, 15, 16, 17, -1};
+uint8_t stepper_enabled = 0;
+
+void disable_steppers() {
+  for (int i = 2; i < 18; i++) {
+    digitalWrite(i, 0);
+  }
+  stepper_enabled = 0;
+}
+
+void step(int *axis, int forward) {
+    if (forward > 0) {
+      axis[4]++;
+      if (axis[4] > 3) axis[4] = 0;
+      fullstep(axis);
+    }
+    else {
+      axis[4]--;
+      if (axis[4] < 0) axis[4] = 3;
+      fullstep(axis);
+    }
+  stepper_enabled = 1;
+}
+
+void fullstep(int *axis) {
+  int phase[4];
+  // 4 step-sequence 1100, 0110, 0011, 1001
+  switch (axis[4]) {
+    case 0:
+      {
+        phase[0] = 1;
+        phase[1] = 1;
+        phase[2] = 0;
+        phase[3] = 0;
+        break;
+      }
+    case 1:
+      {
+        phase[0] = 0;
+        phase[1] = 1;
+        phase[2] = 1;
+        phase[3] = 0;
+        break;
+      }
+    case 2:
+      {
+        phase[0] = 0;
+        phase[1] = 0;
+        phase[2] = 1;
+        phase[3] = 1;
+        break;
+      }
+    case 3:
+      {
+        phase[0] = 1;
+        phase[1] = 0;
+        phase[2] = 0;
+        phase[3] = 1;
+        break;
+      }
+    default:
+      {
+        phase[0] = 0;
+        phase[1] = 0;
+        phase[2] = 0;
+        phase[3] = 0;
+        break;
+      }
+  }
+
+  // write phase to pins
+    for (int p = 0; p < 4; p++) {
+      digitalWrite(axis[p], phase[p]);
+  }
+}
+
 /**
   \brief Do per-step movement maintenance.
 
@@ -550,7 +630,8 @@ void dda_step(DDA *dda) {
       move_state.counter[X] -= dda->delta[X];
       if (move_state.counter[X] < 0) {
         move_state.counter[X] += dda->total_steps;
-        x_step();
+        //x_step();
+        step(axisX, dda->x_direction);
         move_state.steps[X]--;
       }
     }
@@ -558,7 +639,8 @@ void dda_step(DDA *dda) {
       move_state.counter[Y] -= dda->delta[Y];
       if (move_state.counter[Y] < 0) {
         move_state.counter[Y] += dda->total_steps;
-        y_step();
+        //y_step();
+        step(axisY, dda->y_direction);
         move_state.steps[Y]--;
       }
     }
@@ -566,7 +648,8 @@ void dda_step(DDA *dda) {
       move_state.counter[Z] -= dda->delta[Z];
       if (move_state.counter[Z] < 0) {
         move_state.counter[Z] += dda->total_steps;
-        z_step();
+        //z_step();
+        step(axisZ, dda->z_direction);
         move_state.steps[Z]--;
       }
     }
@@ -574,7 +657,8 @@ void dda_step(DDA *dda) {
       move_state.counter[E] -= dda->delta[E];
       if (move_state.counter[E] < 0) {
         move_state.counter[E] += dda->total_steps;
-        e_step();
+        //e_step();
+        step(axisE, dda->e_direction);
         move_state.steps[E]--;
       }
     }
@@ -638,26 +722,30 @@ void dda_step(DDA *dda) {
       enum axis_e i;
 
       if (dda->axis_to_step == X) {
-        x_step();
+        //x_step();
+        step(axisX, dda->x_direction);
         move_state.steps[X]--;
         move_state.time[X] += dda->step_interval[X];
       }
       if (dda->axis_to_step == Y) {
-        y_step();
+        //y_step();
+        step(axisY, dda->y_direction);
         move_state.steps[Y]--;
         move_state.time[Y] += dda->step_interval[Y];
       }
       if (dda->axis_to_step == Z) {
-        z_step();
+        //z_step();
+        step(axisZ, dda->z_direction);
         move_state.steps[Z]--;
         move_state.time[Z] += dda->step_interval[Z];
       }
       if (dda->axis_to_step == E) {
-        e_step();
+        //e_step();
+        step(axisE, dda->e_direction);
         move_state.steps[E]--;
         move_state.time[E] += dda->step_interval[E];
       }
-      unstep();
+      //unstep();
 
       // Find the next stepper to step.
       dda->c = 0xFFFFFFFF;
@@ -722,7 +810,7 @@ void dda_step(DDA *dda) {
 	// turn off step outputs, hopefully they've been on long enough by now to register with the drivers
 	// if not, too bad. or insert a (very!) small delay here, or fire up a spare timer or something.
 	// we also hope that we don't step before the drivers register the low- limit maximum speed if you think this is a problem.
-	unstep();
+	//unstep();
 }
 
 /*! Do regular movement maintenance.
@@ -760,8 +848,12 @@ void dda_clock() {
     last_dda = dda;
   }
 
-  if (dda == NULL)
+  if (dda == NULL) {
+    if (stepper_enabled) {
+      disable_steppers();
+    }
     return;
+  } 
 
   // Caution: we mangle step counters here without locking interrupts. This
   //          means, we trust dda isn't changed behind our back, which could
