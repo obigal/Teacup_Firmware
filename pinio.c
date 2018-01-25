@@ -11,9 +11,34 @@ volatile uint8_t	psu_timeout = 0;
   This sets pins as input or output, appropriate for their usage.
 */
 void pinio_init(void) {
+  
+  #ifdef ULN2003_DRIVER
+    SET_OUTPUT(X_STEP_1); WRITE(X_STEP_1, 0);
+    SET_OUTPUT(X_STEP_2); WRITE(X_STEP_2, 0);
+    SET_OUTPUT(X_STEP_3); WRITE(X_STEP_3, 0);
+    SET_OUTPUT(X_STEP_4); WRITE(X_STEP_4, 0);
+    
+    SET_OUTPUT(Y_STEP_1); WRITE(Y_STEP_1, 0);
+    SET_OUTPUT(Y_STEP_2); WRITE(Y_STEP_2, 0);
+    SET_OUTPUT(Y_STEP_3); WRITE(Y_STEP_3, 0);
+    SET_OUTPUT(Y_STEP_4); WRITE(Y_STEP_4, 0);
+    
+    SET_OUTPUT(Z_STEP_1); WRITE(Z_STEP_1, 0);
+    SET_OUTPUT(Z_STEP_2); WRITE(Z_STEP_2, 0);
+    SET_OUTPUT(Z_STEP_3); WRITE(Z_STEP_3, 0);
+    SET_OUTPUT(Z_STEP_4); WRITE(Z_STEP_4, 0);
+    
+    SET_OUTPUT(E_STEP_1); WRITE(E_STEP_1, 0);
+    SET_OUTPUT(E_STEP_2); WRITE(E_STEP_2, 0);
+    SET_OUTPUT(E_STEP_3); WRITE(E_STEP_3, 0);
+    SET_OUTPUT(E_STEP_4); WRITE(E_STEP_4, 0);
+  #endif
+  
   /// X Stepper.
-  SET_OUTPUT(X_STEP_PIN); WRITE(X_STEP_PIN, 0);
-  SET_OUTPUT(X_DIR_PIN); WRITE(X_DIR_PIN, 0);
+  #ifndef ULN2003_DRIVER
+    SET_OUTPUT(X_STEP_PIN); WRITE(X_STEP_PIN, 0);
+    SET_OUTPUT(X_DIR_PIN); WRITE(X_DIR_PIN, 0);
+  #endif
   #ifdef X_MIN_PIN
     SET_INPUT(X_MIN_PIN);
     PULL_OFF(X_MIN_PIN);
@@ -24,8 +49,10 @@ void pinio_init(void) {
   #endif
 
   /// Y Stepper.
-  SET_OUTPUT(Y_STEP_PIN); WRITE(Y_STEP_PIN, 0);
-  SET_OUTPUT(Y_DIR_PIN); WRITE(Y_DIR_PIN, 0);
+  #ifndef ULN2003_DRIVER
+    SET_OUTPUT(Y_STEP_PIN); WRITE(Y_STEP_PIN, 0);
+    SET_OUTPUT(Y_DIR_PIN); WRITE(Y_DIR_PIN, 0);
+  #endif
   #ifdef Y_MIN_PIN
     SET_INPUT(Y_MIN_PIN);
     PULL_OFF(Y_MIN_PIN);

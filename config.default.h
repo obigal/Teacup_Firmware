@@ -11,7 +11,7 @@
 //#include "config/board.gen3.h"
 //#include "config/board.gen6.h"
 //#include "config/board.gen7-v1.1-v1.3.h"
-#include "config/board.gen7-v1.4.h"
+//#include "config/board.gen7-v1.4.h"
 //#include "config/board.ramps-v1.2.h"
 //#include "config/board.ramps-v1.3.h"
 //#include "config/board.rumba.h"
@@ -20,7 +20,9 @@
 //#include "config/board.sanguish.h"
 //#include "config/board.teensy-v2.0.h"
 //#include "config/board.teensy++-v2.0.h"
+#include "config/board.uno-28byj-uln2003.h"
 
 // Uncomment your printer type, comment out all others.
-#include "config/printer.mendel.h"
+//#include "config/printer.mendel.h"
 //#include "config/printer.wolfstrap.h"
+#include "config/printer.uno-28byj-uln2003.h"

@@ -9,9 +9,9 @@
 #include	<math.h>
 
 #include	"dda_maths.h"
-#include "dda_kinematics.h"
+#include    "dda_kinematics.h"
 #include	"dda_lookahead.h"
-#include "cpu.h"
+#include    "cpu.h"
 #include	"timer.h"
 #include	"serial.h"
 #include	"gcode_parse.h"
@@ -19,9 +19,11 @@
 #include	"debug.h"
 #include	"sersendf.h"
 #include	"pinio.h"
-#include "memory_barrier.h"
-#include "home.h"
-//#include "graycode.c"
+#include    "memory_barrier.h"
+#include    "home.h"
+#ifdef ULN2003_DRIVER
+    #include    "graycode.c"
+#endif
 
 #ifdef	DC_EXTRUDER
 	#include	"heater.h"
@@ -543,6 +545,7 @@ void dda_start(DDA *dda) {
         config.h". On the various tries and measurement results, see commits
         starting with "DDA: Move axis calculations into loops, part 6".
 */
+
 void dda_step(DDA *dda) {
 
   #if ! defined ACCELERATION_TEMPORAL
@@ -707,6 +710,9 @@ void dda_step(DDA *dda) {
     #ifdef Z_AUTODISABLE
       // Z stepper is only enabled while moving.
       z_disable();
+    #ifdef ULN2003_DRIVER
+      unstep_z();
+    #endif
     #endif
 
     // No need to restart timer here.
@@ -760,8 +766,15 @@ void dda_clock() {
     last_dda = dda;
   }
 
-  if (dda == NULL)
+  if (dda == NULL) {
+  #ifdef ULN2003_DRIVER
+    unstep_x();
+    unstep_y();
+    unstep_z();
+    unstep_e();
+  #endif
     return;
+  }
 
   // Caution: we mangle step counters here without locking interrupts. This
   //          means, we trust dda isn't changed behind our back, which could
