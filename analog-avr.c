@@ -53,6 +53,9 @@ void analog_init() {
   Start a new ADC conversion.
 */
 void start_adc() {
+  #ifdef THERMISTOR_PULLUP
+    PULLUP_ON(THERMISTOR_PULLUP);
+  #endif
   ADCSRA |= MASK(ADSC);
 }
 
