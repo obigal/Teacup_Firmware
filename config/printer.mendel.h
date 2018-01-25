@@ -170,6 +170,16 @@
 *                                                                           *
 \***************************************************************************/
 
+/** \def USE_BACKLASH_COMPENSATION
+ Whenever there is a direction reversal, the lash compensation looks at the 
+ next destination point and then adds a backlash amount (for example, 0.4mm) 
+ to the coordinates of that point. Comment out to disable.
+ */
+
+#define USE_BACKLASH_COMPENSATION
+#define LASH_X 0.4
+#define LASH_Y 0.4
+
 /** \def USE_INTERNAL_PULLUPS
 
   Most controller chips feature internal pullup resistors on their input pins,
