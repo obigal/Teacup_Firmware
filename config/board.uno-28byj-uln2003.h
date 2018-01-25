@@ -168,7 +168,7 @@ DEFINE_TEMP_SENSOR(extruder, TT_THERMISTOR, AIO4,  THERMISTOR_EXTRUDER)
 //TEMP_TABLE EXTRUDER (100000, 4092, 4700, 5.0)
 //DEFINE_TEMP_SENSORS_END
 
-
+#define THERMISTOR_PULLUP AIO4 // expermental! use uno onboard pullup resistor
 /***************************************************************************\
 *                                                                           *
 * 4. HEATERS                                                                *
