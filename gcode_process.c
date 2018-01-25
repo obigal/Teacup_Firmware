@@ -11,6 +11,7 @@
 #include "cpu.h"
 #include	"dda.h"
 #include	"dda_queue.h"
+#include        "dda_maths.h"
 #include	"watchdog.h"
 #include	"delay.h"
 #include	"serial.h"
@@ -23,6 +24,7 @@
 #include	"clock.h"
 #include	"config_wrapper.h"
 #include	"home.h"
+#include        "motion_control.h"
 #include "sd.h"
 
 
@@ -128,13 +130,44 @@ void process_gcode_command() {
         temp_wait();
 				enqueue(&next_target.target);
 				break;
+		      case 2:
+		      case 3:
+			//? --- G2: Arc Clockwise ---
+			//? --- G3: Arc Counter-clockwise ---
+			//?
+			//? Example: G02 X47.4 Y13.3 I-21.6 J12.4
+			//?
+			//? Go in an Arc with center (X-21.6, Y+12.4)  from the current (X, Y) point to the point (47.4, 13.3)
+			//?;
+			uint8_t clockwise = 0;
+			// if we didn't see an I or J word, set it to zero. This is for Incremental Arc Distance Mode (G91.1 the default and currently only supported mode)
+			if (next_target.seen_I == 0) {	//ARC support
+			  next_target.I = 0;
+			  if (next_target.seen_J == 0) {
+			    //both are 0, this is an error for G2/3 because radius is 0.
+			    //we generate an error message and just do a linear motion to the target point
+			    sersendf_P(PSTR("E: missing offsets in G-code %d"), next_target.G);
+			    temp_wait();
+			    enqueue(&next_target.target);
+			    break;
+			  }
+			}
+			if (next_target.seen_J == 0)
+			  next_target.J = 0;
+			if (next_target.G == 2) clockwise = 1;
+			//for radius_mode implementation see file gcode.c in gbrl sourcecode
+			//for now only offset implementation
 
-				//	G2 - Arc Clockwise
-				// unimplemented
+			//calculate radius
+			//the integer variant will be off by 8% or so for a radius of 250mm but the radius is
+			//only used to calculate the number of segments the arc is to be drawn in so this
+			//good enough for our use.
+			uint32_t r = approx_distance(labs(next_target.I), labs(next_target.J));
 
-				//	G3 - Arc Counter-clockwise
-				// unimplemented
-
+			// Trace the arc
+			temp_wait();
+			mc_arc(r, clockwise);	//motion_control.h
+			break;
 			case 4:
 				//? --- G4: Dwell ---
 				//?
