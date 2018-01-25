@@ -11,9 +11,14 @@ volatile uint8_t	psu_timeout = 0;
   This sets pins as input or output, appropriate for their usage.
 */
 void pinio_init(void) {
+  // enable output pins directly to port
+  DDRB=0B111111;   // pins 13,12,11,10,9,8
+  DDRC=0B1111;   // pins a5,a4,a3,a2,a1,a0
+  DDRD=0B11111100;   // pins 7,6,5,4,3,2,1,0
+  
   /// X Stepper.
-  SET_OUTPUT(X_STEP_PIN); WRITE(X_STEP_PIN, 0);
-  SET_OUTPUT(X_DIR_PIN); WRITE(X_DIR_PIN, 0);
+  //SET_OUTPUT(X_STEP_PIN); WRITE(X_STEP_PIN, 0);
+  //SET_OUTPUT(X_DIR_PIN); WRITE(X_DIR_PIN, 0);
   #ifdef X_MIN_PIN
     SET_INPUT(X_MIN_PIN);
     PULL_OFF(X_MIN_PIN);
@@ -24,8 +29,8 @@ void pinio_init(void) {
   #endif
 
   /// Y Stepper.
-  SET_OUTPUT(Y_STEP_PIN); WRITE(Y_STEP_PIN, 0);
-  SET_OUTPUT(Y_DIR_PIN); WRITE(Y_DIR_PIN, 0);
+  //SET_OUTPUT(Y_STEP_PIN); WRITE(Y_STEP_PIN, 0);
+  //SET_OUTPUT(Y_DIR_PIN); WRITE(Y_DIR_PIN, 0);
   #ifdef Y_MIN_PIN
     SET_INPUT(Y_MIN_PIN);
     PULL_OFF(Y_MIN_PIN);
