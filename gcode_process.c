@@ -34,6 +34,65 @@ uint8_t tool;
 /// the tool to be changed when we get an M6
 uint8_t next_tool;
 
+#ifdef USE_BACKLASH_COMPENSATION
+const int32_t x_lash = LASH_X * 1000 / 2;
+const int32_t y_lash = LASH_Y * 1000 / 2;
+TARGET lash_target;
+int8_t x_dir = 1;
+int8_t y_dir = 1;
+int32_t prev_x = 0;
+int32_t prev_y = 0;
+
+uint8_t compare_positions(int32_t current_pos, int32_t new_pos, int8_t current_dir)
+{
+  int8_t new_dir = 0;
+  if (current_pos < new_pos) {
+    new_dir = 1;
+  }
+  else if (current_pos > new_pos) {
+    new_dir = -1;
+  }
+  else {
+    return 1;
+  }
+  return (new_dir == current_dir);
+}
+
+// compare to currect position, implement lash countermeasure if necessary
+void calculate_lash() {
+
+  uint8_t countermeasure = 0;
+  memcpy(&lash_target, &startpoint, sizeof(TARGET));
+
+  if (next_target.target.axis[X] > 0 && next_target.target.axis[X] != lash_target.axis[X]) {
+    if (compare_positions(prev_x, next_target.target.axis[X], x_dir) == 0)
+    {
+      x_dir = -x_dir; // reverse the direction of movement
+      lash_target.axis[X] = prev_x + x_lash * x_dir; // calculate x countermeasure position
+      countermeasure = 1;
+    }
+    prev_x = next_target.target.axis[X]; // store real position for next calculation
+    next_target.target.axis[X] = next_target.target.axis[X] + x_lash * x_dir; // recalculate x position
+  }
+  if (next_target.target.axis[Y] > 0 && next_target.target.axis[Y] != lash_target.axis[Y]) {
+    if (compare_positions(prev_y, next_target.target.axis[Y], y_dir) == 0)
+    {
+      y_dir = -y_dir; // reverse the direction of movement
+      lash_target.axis[Y] = prev_y + y_lash * y_dir; // calculate y countermeasure position
+      countermeasure = 1;
+    }
+    prev_y = next_target.target.axis[Y]; // store real position for next calculation
+    next_target.target.axis[Y] = next_target.target.axis[Y] + y_lash * y_dir; // recalculate y position
+  }
+
+  // implement lash countermeasure
+  if (countermeasure) {
+    temp_wait();
+    enqueue(&lash_target);
+  }
+}
+#endif
+
 /************************************************************************//**
 
   \brief Processes command stored in global \ref next_target.
@@ -113,7 +172,10 @@ void process_gcode_command() {
 				//?
 				//? In this case move rapidly to X = 12 mm.  In fact, the RepRap firmware uses exactly the same code for rapid as it uses for controlled moves (see G1 below), as - for the RepRap machine - this is just as efficient as not doing so.  (The distinction comes from some old machine tools that used to move faster if the axes were not driven in a straight line.  For them G0 allowed any movement in space to get to the destination as fast as possible.)
 				//?
-        temp_wait();
+#ifdef USE_BACKLASH_COMPENSATION
+        			calculate_lash();
+#endif
+        			temp_wait();
 				backup_f = next_target.target.F;
 				next_target.target.F = MAXIMUM_FEEDRATE_X * 2L;
 				enqueue(&next_target.target);
@@ -127,7 +189,10 @@ void process_gcode_command() {
 				//?
 				//? Go in a straight line from the current (X, Y) point to the point (90.6, 13.8), extruding material as the move happens from the current extruded length to a length of 22.4 mm.
 				//?
-        temp_wait();
+#ifdef USE_BACKLASH_COMPENSATION
+        			calculate_lash();
+#endif
+        			temp_wait();
 				enqueue(&next_target.target);
 				break;
 		      case 2:
@@ -139,6 +204,9 @@ void process_gcode_command() {
 			//?
 			//? Go in an Arc with center (X-21.6, Y+12.4)  from the current (X, Y) point to the point (47.4, 13.3)
 			//?;
+#ifdef USE_BACKLASH_COMPENSATION
+        		calculate_lash();
+#endif
 			uint8_t clockwise = 0;
 			// if we didn't see an I or J word, set it to zero. This is for Incremental Arc Distance Mode (G91.1 the default and currently only supported mode)
 			if (next_target.seen_I == 0) {	//ARC support
