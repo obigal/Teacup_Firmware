@@ -224,7 +224,7 @@ void process_gcode_command() {
         }
         if (next_target.seen_J == 0)
           next_target.J = 0;
-        if (next_target.G == 2) clockwise = 1;
+        //if (next_target.G == 2) clockwise = 1;
         //for radius_mode implementation see file gcode.c in gbrl sourcecode
         //for now only offset implementation
 
@@ -236,7 +236,7 @@ void process_gcode_command() {
 
         // Trace the arc
         temp_wait();
-        mc_arc(r, clockwise);	//motion_control.h
+        mc_arc(r, (next_target.G == 2));	//motion_control.h
         break;
       case 4:
         //? --- G4: Dwell ---
