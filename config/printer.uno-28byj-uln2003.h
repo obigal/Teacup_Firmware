@@ -32,18 +32,18 @@
 
     Valid range: 20 to 4'0960'000 (0.02 to 40960 steps/mm)
 */
-#define STEPS_PER_M_X            55000
-#define STEPS_PER_M_Y            55000
-#define STEPS_PER_M_Z            55000
-#define STEPS_PER_M_E            58000
+#define STEPS_PER_M_X            56000  // 56000 NOTE: X and Y must match
+#define STEPS_PER_M_Y            56000  // 56000
+#define STEPS_PER_M_Z            60000  // 60000
+#define STEPS_PER_M_E            58000  // 5800
 
 /** \def MAXIMUM_FEEDRATE_X MAXIMUM_FEEDRATE_Y MAXIMUM_FEEDRATE_Z MAXIMUM_FEEDRATE_E
   Used for G0 rapid moves and as a cap for all other feedrates.
 */
-#define MAXIMUM_FEEDRATE_X       600
-#define MAXIMUM_FEEDRATE_Y       600
-#define MAXIMUM_FEEDRATE_Z       300
-#define MAXIMUM_FEEDRATE_E       400
+#define MAXIMUM_FEEDRATE_X       400  // 400-600
+#define MAXIMUM_FEEDRATE_Y       400  // 400-600
+#define MAXIMUM_FEEDRATE_Z       200  // 200
+#define MAXIMUM_FEEDRATE_E       400  // 400
 
 /** \def SEARCH_FEEDRATE_X SEARCH_FEEDRATE_Y SEARCH_FEEDRATE_Z
   Used when doing precision endstop search and as default feedrate. No
@@ -231,7 +231,7 @@
 
     Unit: seconds
 */
-#define TEMP_RESIDENCY_TIME      60
+#define TEMP_RESIDENCY_TIME      30
 
 /** \def TEMP_EWMA
 
