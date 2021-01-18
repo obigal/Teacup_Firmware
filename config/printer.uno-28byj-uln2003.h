@@ -35,7 +35,7 @@
 #define STEPS_PER_M_X            56000  // 56000 NOTE: X and Y must match
 #define STEPS_PER_M_Y            56000  // 56000
 #define STEPS_PER_M_Z            60000  // 60000
-#define STEPS_PER_M_E            58000  // 5800
+#define STEPS_PER_M_E            58000  // 58000
 
 /** \def MAXIMUM_FEEDRATE_X MAXIMUM_FEEDRATE_Y MAXIMUM_FEEDRATE_Z MAXIMUM_FEEDRATE_E
   Used for G0 rapid moves and as a cap for all other feedrates.
